@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.SceneAsset",
-    "_name": "chart",
+    "_name": "ChartPlayer",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
@@ -11,7 +11,7 @@
   },
   {
     "__type__": "cc.Scene",
-    "_name": "chart",
+    "_name": "ChartPlayer",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -181,7 +181,7 @@
     "_priority": 0,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 593.4398654331371,
+    "_orthoHeight": 591.825063078217,
     "_near": 0,
     "_far": 1000,
     "_color": {

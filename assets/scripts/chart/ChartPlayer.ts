@@ -58,10 +58,10 @@ export class ChartPlayer extends Component {
     chartText: ChartText
 
     private static instance: ChartPlayer
-    private songPath: string = "hopefortheflowers"
-    private songDuration: number = 0;
+    private songId: string = ""
+    private songDuration: number = 0
     private globalTime: number = 0
-    private settings: GlobalSettings
+    private globalSettings: GlobalSettings
     private UPB = 120  // Units per beat
 
     
@@ -69,7 +69,7 @@ export class ChartPlayer extends Component {
     // # Lifecycle
     constructor() {
         super();
-        this.settings = GlobalSettings.getInstance();
+        this.globalSettings = GlobalSettings.getInstance();
     }
 
     public static get Instance() {
@@ -78,6 +78,10 @@ export class ChartPlayer extends Component {
 
     onLoad() {
         ChartPlayer.instance = this;
+        this.songId = this.globalSettings.selectedSongId
+            ? this.globalSettings.selectedSongId
+            : "hopefortheflowers"
+
         this.loadChart();
 
         this.pauseButton.node.on("click", () => this.pauseMusic());
@@ -90,12 +94,20 @@ export class ChartPlayer extends Component {
         } else {
             console.error("AudioSource component is not attached.");
         }
+
+        director.preloadScene("ResultScreen", (err) => {
+            if (err) {
+                console.log("SCENE::RESULTSCREEN: Failed");
+                return;
+            }
+            console.log("SCENE::RESULTSCREEN: Preloaded");
+        });
     }
 
     onAudioEnded() {
-        console.log("SONG ENDED");
+        console.log(`SONG::${this.songId.toUpperCase()}: Ended`);
         this.scheduleOnce(function() {
-            director.loadScene("result");
+            director.loadScene("ResultScreen");
         }, 3);
     }
 
@@ -116,7 +128,7 @@ export class ChartPlayer extends Component {
 
     // # Functions
     loadMusic() {
-        resources.load(`songs/${this.songPath}/base`, AudioClip, (error, clip: AudioClip) => {
+        resources.load(`songs/${this.songId}/base`, AudioClip, (error, clip: AudioClip) => {
             if (error) {
                 console.error("Failed to load music:", error);
                 return;
@@ -125,7 +137,6 @@ export class ChartPlayer extends Component {
             if (this.audioSource) {
                 this.audioSource.clip = clip;
                 this.songDuration = clip.getDuration();
-                this.progressSlider.initialize(clip.getDuration());
             }
         });
     }
@@ -169,7 +180,7 @@ export class ChartPlayer extends Component {
 
     loadChart() {
         this.judgePointPool.reset();
-        resources.load(`songs/${this.songPath}/2`, JsonAsset, (error, res: JsonAsset) => {
+        resources.load(`songs/${this.songId}/2`, JsonAsset, (error, res: JsonAsset) => {
             if (error) {
                 console.error("Failed to load chart:", error);
                 return;
@@ -192,7 +203,9 @@ export class ChartPlayer extends Component {
     covertTextEvent(textEvent: any, bpmEvents: BPMEvent[]) {
         return {
             ...textEvent,
-            time: Array.isArray(textEvent.time) ? this.convertToSeconds(textEvent.time, bpmEvents) + this.settings.offset : textEvent.time + this.settings.offset,
+            time: Array.isArray(textEvent.time)
+                ? this.convertToSeconds(textEvent.time, bpmEvents) + this.globalSettings.offset
+                : textEvent.time + this.globalSettings.offset,
         }
     }
 
@@ -200,19 +213,27 @@ export class ChartPlayer extends Component {
         const convertEventTimings = (events: Event[]): Event[] =>
             events.map(event => ({
                 ...event,
-                startTime: Array.isArray(event.startTime) ? this.convertToSeconds(event.startTime, bpmEvents) + this.settings.offset : event.startTime + this.settings.offset,
-                endTime: Array.isArray(event.endTime) ? this.convertToSeconds(event.endTime, bpmEvents) + this.settings.offset : event.endTime + this.settings.offset,
+                startTime: Array.isArray(event.startTime)
+                    ? this.convertToSeconds(event.startTime, bpmEvents) + this.globalSettings.offset
+                    : event.startTime + this.globalSettings.offset,
+                endTime: Array.isArray(event.endTime)
+                    ? this.convertToSeconds(event.endTime, bpmEvents) + this.globalSettings.offset
+                    : event.endTime + this.globalSettings.offset,
             }))
 
         const convertNoteTimings = (notes: any[]): any[] => {
             return notes.map(note => {
                 const convertedNote = {
                     ...note, 
-                    time: Array.isArray(note.time) ? this.convertToSeconds(note.time, bpmEvents) + this.settings.offset : note.time + this.settings.offset,
+                    time: Array.isArray(note.time)
+                        ? this.convertToSeconds(note.time, bpmEvents) + this.globalSettings.offset
+                        : note.time + this.globalSettings.offset,
                 };
 
                 if (note.endTime) {
-                    convertedNote.endTime = Array.isArray(note.endTime) ? this.convertToSeconds(note.endTime, bpmEvents) + this.settings.offset : note.endTime + this.settings.offset;
+                    convertedNote.endTime = Array.isArray(note.endTime)
+                        ? this.convertToSeconds(note.endTime, bpmEvents) + this.globalSettings.offset
+                        : note.endTime + this.globalSettings.offset;
                 }
         
                 return convertedNote;

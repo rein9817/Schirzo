@@ -1,6 +1,11 @@
 export class GlobalSettings {
     private static instance: GlobalSettings
 
+    // Game Logic
+    private _selectedChapterId: string = ""
+    private _selectedSongId: string = ""
+
+    // User Settings
     public flowSpeed: number = 4.0
     public offset: number = 0.0
 
@@ -31,5 +36,19 @@ export class GlobalSettings {
 
         this.flowSpeed = flowSpeed;
         this.offset = offset;
+    }
+
+    get selectedChapterId(): string {
+        return this._selectedChapterId;
+    }
+    set selectedChapterId(chapterId: string) {
+        this._selectedChapterId = chapterId;
+    }
+
+    get selectedSongId(): string {
+        return this._selectedSongId;
+    }
+    set selectedSongId(songId: string) {
+        this._selectedSongId = songId;
     }
 }
